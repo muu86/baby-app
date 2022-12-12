@@ -1,87 +1,26 @@
-import FaceIcon from '@mui/icons-material/Face';
-import Face3Icon from '@mui/icons-material/Face3';
-import ScaleIcon from '@mui/icons-material/Scale';
 import {
-  InputAdornment,
-  Slider,
   Avatar,
   Box,
   Button,
   Container,
   CssBaseline,
   Grid,
+  InputAdornment,
   TextField,
   Typography,
 } from '@mui/material';
-// import Avatar from '@mui/material/Avatar';
-// import Box from '@mui/material/Box';
-// import Button from '@mui/material/Button';
-// import Container from '@mui/material/Container';
-// import CssBaseline from '@mui/material/CssBaseline';
-// import Grid from '@mui/material/Grid';
-// import TextField from '@mui/material/TextField';
-// import Typography from '@mui/material/Typography';
-import { useState } from 'react';
+import FaceIcon from '@mui/icons-material/Face';
+import Face3Icon from '@mui/icons-material/Face3';
+import ScaleIcon from '@mui/icons-material/Scale';
 import axios from 'axios';
-import { getZ, getPercentileFromZ } from '../../utils/calculator';
+import { useState, useEffect, useRef } from 'react';
+import PercentileSlider from '../../components/PercentileSlider';
+import { getPercentileFromZ, getZ } from '../../utils/calculator';
+import GrowthChart from '../../components/GrowthChart';
 
 const API_URL =
   'https://20j4xpf7sj.execute-api.ap-northeast-2.amazonaws.com/Prod/percentile';
 
-const percentilesMarks = [
-  // {
-  //   value: 1,
-  //   label: '1',
-  // },
-  // {
-  //   value: 3,
-  //   label: '3',
-  // },
-  {
-    value: 5,
-    label: '5',
-  },
-  // {
-  //   value: 10,
-  //   label: '10',
-  // },
-  {
-    value: 15,
-    label: '15',
-  },
-  {
-    value: 25,
-    label: '25',
-  },
-  {
-    value: 50,
-    label: '50',
-  },
-  {
-    value: 75,
-    label: '75',
-  },
-  {
-    value: 85,
-    label: '85',
-  },
-  // {
-  //   value: 90,
-  //   label: '90',
-  // },
-  {
-    value: 95,
-    label: '95',
-  },
-  // {
-  //   value: 97,
-  //   label: '97',
-  // },
-  // {
-  //   value: 99,
-  //   label: '99',
-  // },
-];
 // function Copyright(props) {
 //   return (
 //     <Typography
@@ -101,50 +40,81 @@ const percentilesMarks = [
 // }
 
 export default function PercentileCalculator() {
-  const [isMale, setIsMale] = useState(true);
   const [data, setData] = useState(null);
   const [value, setValue] = useState(0.0);
+  const [userInput, setUserInput] = useState({});
+
+  const monthInput = useRef(null);
+  const heightInput = useRef(null);
+
+  useEffect(() => {
+    if (data) {
+      const zScore = getZ(userInput.height, data.lms[1], data.lms[2]);
+      const percentile = getPercentileFromZ(zScore);
+      setValue(+(percentile * 100).toFixed(2));
+    }
+  }, [userInput, data]);
 
   const handleMale = () => {
-    setIsMale(true);
+    setUserInput({
+      ...userInput,
+      gender: 1,
+    });
   };
 
   const handleFemale = () => {
-    setIsMale(false);
+    setUserInput({
+      ...userInput,
+      gender: 2,
+    });
+    console.log(userInput);
+  };
+
+  const handleMonths = (e) => {
+    e.preventDefault();
+
+    if (e.target.value >= 100) {
+      monthInput.current.value = 100;
+      return;
+    } else if (e.target.value < 0) {
+      monthInput.current.value = 0;
+      return;
+    }
+
+    setUserInput({
+      ...userInput,
+      month: +e.target.value,
+    });
+  };
+
+  const handleHeight = (e) => {
+    e.preventDefault();
+
+    if (e.target.value < 0) {
+      heightInput.current.value = 0;
+      return;
+    }
+
+    setUserInput({
+      ...userInput,
+      height: +e.target.value,
+    });
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      isMale,
-      months: +data.get('months'),
-      height: +data.get('height'),
-      weight: +data.get('weight'),
-    });
 
-    getHeightByMonthData(
-      isMale ? '1' : '2',
-      data.get('months'),
-      data.get('height')
-    );
+    console.log(userInput);
+    getHeightByMonthData(userInput);
   };
 
-  const getHeightByMonthData = (gender, month, height) => {
+  const getHeightByMonthData = ({ gender, month }) => {
     axios
       .get(API_URL + '/height-by-month', {
         params: { gender, month },
       })
       .then((res) => {
         setData(res.data.Item);
-        console.log(data);
-        const zScore = getZ(height, data.lms[1], data.lms[2]);
-        console.log(zScore);
-        const percentile = getPercentileFromZ(zScore);
-        console.log(percentile);
-
-        setValue(percentile.toFixed(4) * 100);
-        console.log(value);
       })
       .catch((err) => {
         alert(err);
@@ -178,7 +148,7 @@ export default function PercentileCalculator() {
               <Button
                 onClick={handleMale}
                 size="large"
-                color={isMale ? 'primary' : 'grey'}
+                color={userInput.gender === 1 ? 'primary' : 'grey'}
                 startIcon={<FaceIcon />}
               >
                 남아
@@ -188,7 +158,7 @@ export default function PercentileCalculator() {
               <Button
                 onClick={handleFemale}
                 size="large"
-                color={isMale ? 'grey' : 'primary'}
+                color={userInput.gender === 2 ? 'primary' : 'grey'}
                 startIcon={<Face3Icon />}
               >
                 여아
@@ -217,6 +187,8 @@ export default function PercentileCalculator() {
                 InputLabelProps={{
                   shrink: true,
                 }}
+                onChange={handleMonths}
+                inputRef={monthInput}
               />
               {/* <IconButton
                 type="button"
@@ -255,26 +227,19 @@ export default function PercentileCalculator() {
                 InputLabelProps={{
                   shrink: true,
                 }}
+                onChange={handleHeight}
+                inputRef={heightInput}
+                inputProps={{ step: '0.1' }}
               />
             </Grid>
             {/* END - 키 */}
+
             {/* START- 키 백분위 */}
             <Grid item xs={12}>
-              <Slider
-                aria-label="percentiles"
-                defaultValue={50}
-                value={value}
-                // disabled
-                // getAriaValueText={(value) => `${value}th`}
-                valueLabelDisplay="auto"
-                step={0.01}
-                // disabled
-                marks={percentilesMarks}
-              />
-              <Typography>{`${value}%`}</Typography>
+              <PercentileSlider value={value} />
             </Grid>
-
             {/* END- 키 백분위 */}
+
             {/* START - 몸무게 */}
             <Grid item xs={12}>
               <TextField
@@ -332,6 +297,15 @@ export default function PercentileCalculator() {
                 </Link>
               </Grid>
             </Grid> */}
+        </Box>
+        <Box
+          sx={{
+            marginTop: 8,
+            width: 500,
+            height: 500,
+          }}
+        >
+          <GrowthChart />
         </Box>
       </Box>
       {/* <Copyright sx={{ mt: 5 }} /> */}
