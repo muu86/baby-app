@@ -1,3 +1,6 @@
+import FaceIcon from '@mui/icons-material/Face';
+import Face3Icon from '@mui/icons-material/Face3';
+import ScaleIcon from '@mui/icons-material/Scale';
 import {
   Avatar,
   Box,
@@ -9,35 +12,11 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import FaceIcon from '@mui/icons-material/Face';
-import Face3Icon from '@mui/icons-material/Face3';
-import ScaleIcon from '@mui/icons-material/Scale';
-import axios from 'axios';
-import { useState, useEffect, useRef } from 'react';
-import PercentileSlider from '../../components/PercentileSlider';
-import { getPercentileFromZ, getZ } from '../../utils/calculator';
+import { useEffect, useRef, useState } from 'react';
 import GrowthChart from '../../components/GrowthChart';
-
-const API_URL =
-  'https://20j4xpf7sj.execute-api.ap-northeast-2.amazonaws.com/Prod/percentile';
-
-// function Copyright(props) {
-//   return (
-//     <Typography
-//       variant="body2"
-//       color="text.secondary"
-//       align="center"
-//       {...props}
-//     >
-//       {'Copyright © '}
-//       <Link color="inherit" href="https://mui.com/">
-//         Your Website
-//       </Link>{' '}
-//       {new Date().getFullYear()}
-//       {'.'}
-//     </Typography>
-//   );
-// }
+import PercentileSlider from '../../components/PercentileSlider';
+import api from '../../utils/api';
+import { getUserPercentile } from '../../utils/calculator';
 
 export default function PercentileCalculator() {
   const [data, setData] = useState(null);
@@ -48,11 +27,18 @@ export default function PercentileCalculator() {
   const heightInput = useRef(null);
 
   useEffect(() => {
-    if (data) {
-      const zScore = getZ(userInput.height, data.lms[1], data.lms[2]);
-      const percentile = getPercentileFromZ(zScore);
-      setValue(+(percentile * 100).toFixed(2));
-    }
+    (async () => {
+      const apiData = await api.getAllData();
+
+      setData(apiData);
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (!data) return;
+    if (!userInput.height || !userInput.month || !userInput.gender) return;
+
+    setValue(getUserPercentile(userInput, data));
   }, [userInput, data]);
 
   const handleMale = () => {
@@ -67,18 +53,17 @@ export default function PercentileCalculator() {
       ...userInput,
       gender: 2,
     });
-    console.log(userInput);
   };
 
   const handleMonths = (e) => {
     e.preventDefault();
 
-    if (e.target.value >= 100) {
-      monthInput.current.value = 100;
-      return;
-    } else if (e.target.value < 0) {
-      monthInput.current.value = 0;
-      return;
+    if (data) {
+      if (e.target.value >= data.length / 2) {
+        monthInput.current.value = data.length / 2;
+      } else if (e.target.value < 0) {
+        monthInput.current.value = 0;
+      }
     }
 
     setUserInput({
@@ -92,7 +77,8 @@ export default function PercentileCalculator() {
 
     if (e.target.value < 0) {
       heightInput.current.value = 0;
-      return;
+    } else if (e.target.value >= 200) {
+      heightInput.current.value = 200;
     }
 
     setUserInput({
@@ -103,22 +89,6 @@ export default function PercentileCalculator() {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-
-    console.log(userInput);
-    getHeightByMonthData(userInput);
-  };
-
-  const getHeightByMonthData = ({ gender, month }) => {
-    axios
-      .get(API_URL + '/height-by-month', {
-        params: { gender, month },
-      })
-      .then((res) => {
-        setData(res.data.Item);
-      })
-      .catch((err) => {
-        alert(err);
-      });
   };
 
   return (
@@ -234,11 +204,11 @@ export default function PercentileCalculator() {
             </Grid>
             {/* END - 키 */}
 
-            {/* START- 키 백분위 */}
+            {/* START- 키 백분위 슬라이더 */}
             <Grid item xs={12}>
               <PercentileSlider value={value} />
             </Grid>
-            {/* END- 키 백분위 */}
+            {/* END- 키 백분위 슬라이더 */}
 
             {/* START - 몸무게 */}
             <Grid item xs={12}>
@@ -282,14 +252,14 @@ export default function PercentileCalculator() {
                 />
               </Grid> */}
           </Grid>
-          <Button
+          {/* <Button
             type="submit"
             fullWidth
             variant="contained"
             sx={{ mt: 3, mb: 2 }}
           >
             확인
-          </Button>
+          </Button> */}
           {/* <Grid container justifyContent="flex-end">
               <Grid item>
                 <Link href="#" variant="body2">
@@ -299,16 +269,35 @@ export default function PercentileCalculator() {
             </Grid> */}
         </Box>
         <Box
+          // fullWidth
           sx={{
-            marginTop: 8,
+            marginTop: 2,
             width: 500,
             height: 500,
           }}
         >
-          <GrowthChart />
+          <GrowthChart userInput={userInput} data={data} />
         </Box>
       </Box>
       {/* <Copyright sx={{ mt: 5 }} /> */}
     </Container>
   );
 }
+
+// function Copyright(props) {
+//   return (
+//     <Typography
+//       variant="body2"
+//       color="text.secondary"
+//       align="center"
+//       {...props}
+//     >
+//       {'Copyright © '}
+//       <Link color="inherit" href="https://mui.com/">
+//         Your Website
+//       </Link>{' '}
+//       {new Date().getFullYear()}
+//       {'.'}
+//     </Typography>
+//   );
+// }

@@ -1,8 +1,8 @@
-export const getZ = (value, mean, sd) => {
+const getZ = (value, mean, sd) => {
   return (value / mean - 1) / sd;
 };
 
-export const getPercentileFromZ = (z) => {
+const getPercentileFromZ = (z) => {
   //z == number of standard deviations from the mean
 
   //if z is greater than 6.5 standard deviations from the mean
@@ -30,4 +30,10 @@ export const getPercentileFromZ = (z) => {
   sum += 0.5;
 
   return sum;
+};
+
+export const getUserPercentile = ({ gender, month, height }, data) => {
+  const [r] = data.filter((d) => d.month == month && d.gender == gender);
+  const userPercentile = getPercentileFromZ(getZ(height, r.lms[1], r.lms[2]));
+  return +(userPercentile * 100).toFixed(2);
 };
