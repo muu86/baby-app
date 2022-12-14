@@ -272,8 +272,8 @@ export default function Home() {
           // fullWidth
           sx={{
             marginTop: 2,
-            width: 500,
-            height: 500,
+            width: 350,
+            height: 350,
           }}
         >
           <GrowthChart userInput={userInput} data={data} />
