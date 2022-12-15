@@ -116,6 +116,7 @@ const transformDatasets = (userInput, type, data) => {
 // type: "height" | "weight"
 export default function GrowthChart({ userInput, type, data }) {
   const chartData = transformDatasets(userInput, type, data);
+  const unit = type === 'height' ? 'cm' : 'kg';
 
   return chartData ? (
     <Line
@@ -132,7 +133,7 @@ export default function GrowthChart({ userInput, type, data }) {
             title: { display: true, text: '개월' },
           },
           y: {
-            title: { display: true, text: 'cm' },
+            title: { display: true, text: unit },
           },
         },
       }}
