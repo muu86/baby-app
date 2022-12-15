@@ -32,8 +32,29 @@ const getPercentileFromZ = (z) => {
   return sum;
 };
 
-export const getUserPercentile = ({ gender, month, height }, data) => {
+const formatValue = (value) => {
+  return +(value * 100).toFixed(2);
+};
+
+export const getUserPercentile = ({ gender, month, height, weight }, data) => {
   const [r] = data.filter((d) => d.month == month && d.gender == gender);
-  const userPercentile = getPercentileFromZ(getZ(height, r.lms[1], r.lms[2]));
-  return +(userPercentile * 100).toFixed(2);
+  const result = {};
+  if (height) {
+    const userHeightPercentile = getPercentileFromZ(
+      getZ(height, r.height.lms[1], r.height.lms[2])
+    );
+    console.log(userHeightPercentile);
+    result.height = formatValue(userHeightPercentile);
+  }
+
+  if (weight) {
+    const userWeightPercentile = getPercentileFromZ(
+      getZ(weight, r.weight.lms[1], r.weight.lms[2])
+    );
+    result.weight = formatValue(userWeightPercentile);
+  }
+
+  console.log(result);
+
+  return result;
 };

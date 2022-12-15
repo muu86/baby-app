@@ -1,8 +1,6 @@
 import FaceIcon from '@mui/icons-material/Face';
 import Face3Icon from '@mui/icons-material/Face3';
-import ScaleIcon from '@mui/icons-material/Scale';
 import {
-  Avatar,
   Box,
   Button,
   Container,
@@ -14,17 +12,24 @@ import {
 } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
 import GrowthChart from '../components/GrowthChart';
-import PercentileSlider from '../components/PercentileSlider';
 import api from '../utils/api';
 import { getUserPercentile } from '../utils/calculator';
 
+const validateUserInput = ({ gender, month, height, weight }) => {
+  if (!month || !gender) return false;
+  if (!height && !weight) return false;
+  return true;
+};
+
 export default function Home() {
   const [data, setData] = useState(null);
-  const [value, setValue] = useState(0.0);
+  const [userHeightPercentile, setUserHeightPercentile] = useState(0.0);
+  const [userWeightPercentile, setUserWeightPercentile] = useState(0.0);
   const [userInput, setUserInput] = useState({});
 
   const monthInput = useRef(null);
   const heightInput = useRef(null);
+  const weightInput = useRef(null);
 
   useEffect(() => {
     (async () => {
@@ -36,9 +41,12 @@ export default function Home() {
 
   useEffect(() => {
     if (!data) return;
-    if (!userInput.height || !userInput.month || !userInput.gender) return;
+    if (!validateUserInput(userInput)) return;
 
-    setValue(getUserPercentile(userInput, data));
+    const userPercentile = getUserPercentile(userInput, data);
+
+    if (userPercentile.height) setUserHeightPercentile(userPercentile.height);
+    if (userPercentile.weight) setUserWeightPercentile(userPercentile.weight);
   }, [userInput, data]);
 
   const handleMale = () => {
@@ -87,6 +95,21 @@ export default function Home() {
     });
   };
 
+  const handleWeight = (e) => {
+    e.preventDefault();
+
+    if (e.target.value < 0) {
+      weightInput.current.value = 0;
+    } else if (e.target.value >= 200) {
+      weightInput.current.value = 200;
+    }
+
+    setUserInput({
+      ...userInput,
+      weight: +e.target.value,
+    });
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
   };
@@ -96,55 +119,47 @@ export default function Home() {
       <CssBaseline />
       <Box
         sx={{
-          marginTop: 8,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          mt: 2,
+        }}
+      >
+        <Typography component="h1" variant="h5">
+          아이 성장 체크
+        </Typography>
+      </Box>
+      <Box
+        // fullWidth
+        sx={{
+          marginTop: 2,
+          width: 350,
+          height: 350,
+        }}
+      >
+        <GrowthChart userInput={userInput} data={data} />
+      </Box>
+      <Box
+        sx={{
+          marginTop: 1,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
         }}
       >
-        <Avatar
+        {/* <Avatar
           variant="rounded"
           sx={{ m: 1, width: 50, height: 50, bgcolor: 'primary.main' }}
         >
           <ScaleIcon />
-        </Avatar>
-        <Typography component="h1" variant="h5">
-          아이 성장 체크
-        </Typography>
-        <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
+        </Avatar> */}
+        <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 1 }}>
           <Grid container spacing={2}>
-            {/* START - 성별 */}
-            <Grid item xs={6}>
-              <Button
-                onClick={handleMale}
-                size="large"
-                color={userInput.gender === 1 ? 'primary' : 'grey'}
-                startIcon={<FaceIcon />}
-              >
-                남아
-              </Button>
-            </Grid>
-            <Grid item xs={6}>
-              <Button
-                onClick={handleFemale}
-                size="large"
-                color={userInput.gender === 2 ? 'primary' : 'grey'}
-                startIcon={<Face3Icon />}
-              >
-                여아
-              </Button>
-            </Grid>
-            {/* END - 성별 */}
-
             {/* START - 개월 수 */}
-            <Grid item xs={12}>
-              {/* <IconButton sx={{ p: '10px' }} aria-label="menu">
-                  <MenuIcon />
-                </IconButton> */}
+            <Grid item xs={6}>
               <TextField
                 type="number"
                 fullWidth
-                // sx={{ flex: 1 }}
                 name="months"
                 label="개월 수"
                 placeholder="0"
@@ -160,26 +175,34 @@ export default function Home() {
                 onChange={handleMonths}
                 inputRef={monthInput}
               />
-              {/* <IconButton
-                type="button"
-                sx={{ p: '10px' }}
-                // aria-label="search"
-              >
-                <ArrowDropDownIcon />
-              </IconButton> */}
-              {/* <Divider sx={{ height: 28, m: 0.5 }} orientation="vertical" />
-                <IconButton
-                  color="primary"
-                  sx={{ p: '10px' }}
-                  aria-label="directions"
-                >
-                  <DirectionsIcon />
-                </IconButton> */}
             </Grid>
             {/* END - 개월 수 */}
 
+            {/* START - 성별 */}
+            <Grid item xs={6}>
+              <Box>
+                <Button
+                  onClick={handleMale}
+                  size="large"
+                  color={userInput.gender === 1 ? 'primary' : 'grey'}
+                  startIcon={<FaceIcon />}
+                >
+                  남아
+                </Button>
+                <Button
+                  onClick={handleFemale}
+                  size="large"
+                  color={userInput.gender === 2 ? 'primary' : 'grey'}
+                  startIcon={<Face3Icon />}
+                >
+                  여아
+                </Button>
+              </Box>
+            </Grid>
+            {/* END - 성별 */}
+
             {/* START - 키 */}
-            <Grid item xs={12}>
+            <Grid item xs={6}>
               <TextField
                 type="number"
                 // required
@@ -205,13 +228,29 @@ export default function Home() {
             {/* END - 키 */}
 
             {/* START- 키 백분위 슬라이더 */}
-            <Grid item xs={12}>
-              <PercentileSlider value={value} />
+            <Grid
+              item
+              xs={6}
+              sx={{
+                pl: 2,
+                pr: 2,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'flex-end',
+              }}
+            >
+              {/* <PercentileSlider value={value} /> */}
+              <Typography
+                component="h1"
+                variant="h4"
+                textAlign="center"
+              >{`${userHeightPercentile}%`}</Typography>
             </Grid>
             {/* END- 키 백분위 슬라이더 */}
 
             {/* START - 몸무게 */}
-            <Grid item xs={12}>
+            <Grid item xs={6}>
               <TextField
                 type="number"
                 // required
@@ -229,28 +268,29 @@ export default function Home() {
                 InputLabelProps={{
                   shrink: true,
                 }}
+                ref={weightInput}
+                onChange={handleWeight}
               />
             </Grid>
+            <Grid
+              item
+              xs={6}
+              sx={{
+                pl: 2,
+                pr: 2,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'flex-end',
+              }}
+            >
+              <Typography
+                component="h1"
+                variant="h4"
+                textAlign="center"
+              >{`${userWeightPercentile}%`}</Typography>
+            </Grid>
             {/* END - 몸무게 */}
-            {/* <Grid item xs={12}>
-              <TextField
-                required
-                fullWidth
-                name="password"
-                label="Password"
-                type="password"
-                id="password"
-                // autoComplete="new-password"
-              />
-            </Grid> */}
-            {/* <Grid item xs={12}>
-                <FormControlLabel
-                  control={
-                    <Checkbox value="allowExtraEmails" color="primary" />
-                  }
-                  label="I want to receive inspiration, marketing promotions and updates via email."
-                />
-              </Grid> */}
           </Grid>
           {/* <Button
             type="submit"
@@ -267,16 +307,6 @@ export default function Home() {
                 </Link>
               </Grid>
             </Grid> */}
-        </Box>
-        <Box
-          // fullWidth
-          sx={{
-            marginTop: 2,
-            width: 350,
-            height: 350,
-          }}
-        >
-          <GrowthChart userInput={userInput} data={data} />
         </Box>
       </Box>
       {/* <Copyright sx={{ mt: 5 }} /> */}
