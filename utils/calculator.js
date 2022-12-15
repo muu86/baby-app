@@ -43,7 +43,6 @@ export const getUserPercentile = ({ gender, month, height, weight }, data) => {
     const userHeightPercentile = getPercentileFromZ(
       getZ(height, r.height.lms[1], r.height.lms[2])
     );
-    console.log(userHeightPercentile);
     result.height = formatValue(userHeightPercentile);
   }
 
@@ -53,8 +52,6 @@ export const getUserPercentile = ({ gender, month, height, weight }, data) => {
     );
     result.weight = formatValue(userWeightPercentile);
   }
-
-  console.log(result);
 
   return result;
 };
