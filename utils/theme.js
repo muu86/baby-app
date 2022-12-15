@@ -1,4 +1,12 @@
-import { red, grey } from '@mui/material/colors';
+import {
+  red,
+  grey,
+  purple,
+  blue,
+  cyan,
+  teal,
+  amber,
+} from '@mui/material/colors';
 import { createTheme } from '@mui/material/styles';
 import { Noto_Sans_KR } from '@next/font/google';
 
@@ -29,6 +37,14 @@ export const theme = createTheme({
     },
     grey: {
       main: grey.A400,
+    },
+    chart: {
+      ['10th']: amber[100],
+      ['25th']: cyan[100],
+      ['50th']: blue[500],
+      ['75th']: purple[100],
+      ['90th']: teal[100],
+      ['user']: red[500],
     },
   },
   typography: {

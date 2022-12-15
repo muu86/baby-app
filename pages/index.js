@@ -8,12 +8,12 @@ import {
   CssBaseline,
   Grid,
   InputAdornment,
+  Skeleton,
   TextField,
   Typography,
 } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
 import ChartTabs from '../components/ChartTabs';
-import GrowthChart from '../components/GrowthChart';
 import api from '../utils/api';
 import { getUserPercentile } from '../utils/calculator';
 
@@ -327,8 +327,19 @@ export default function Home() {
       >
         <GrowthChart userInput={userInput} data={data} />
       </Box> */}
-      <Box>
-        <ChartTabs userInput={userInput} data={data} />
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        {data ? (
+          <ChartTabs userInput={userInput} data={data} />
+        ) : (
+          <Skeleton fullWidth sx={{ width: 500, height: 500 }} />
+        )}
       </Box>
       {/* <Copyright sx={{ mt: 5 }} /> */}
     </Container>
