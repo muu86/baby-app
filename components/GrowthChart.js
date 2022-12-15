@@ -1,4 +1,4 @@
-import { Skeleton } from '@mui/material';
+import { Skeleton, Typography } from '@mui/material';
 import {
   CategoryScale,
   Chart as ChartJS,
@@ -36,17 +36,19 @@ const validateUserInput = (userInput) => {
   return true;
 };
 
-const generateDefaultUserInput = () => {
-  return {
-    gender: 1,
-    month: 0,
-    height: 50,
-    weight: 3.3,
-  };
-};
+const transformDatasets = (userInput, type, data) => {
+  if (!data) return null;
+  if (!userInput || !userInput[type]) {
+    const defaultValue = type == 'height' ? 49.9 : 3.3;
+    return transformDatasets(
+      { gender: 1, month: 0, [type]: defaultValue },
+      type,
+      data
+    );
+  }
 
-const transformDatasets = (userInput, data) => {
-  const { month, gender, height, weight } = userInput;
+  const { month, gender } = userInput;
+  const userInputOfType = userInput[type];
 
   const monthStart = Math.max(month - 10, 0);
   const monthEnd = Math.min(month + 10, 227);
@@ -55,16 +57,9 @@ const transformDatasets = (userInput, data) => {
     return r.gender == gender && r.month >= monthStart && r.month <= monthEnd;
   });
 
-  const userHeightData = rangeFiltered.map((r) => {
+  const userTypeData = rangeFiltered.map((r) => {
     if (r.month == month) {
-      return height;
-    }
-    return null;
-  });
-
-  const userWeightData = rangeFiltered.map((r) => {
-    if (r.month == month) {
-      return weight;
+      return userInputOfType;
     }
     return null;
   });
@@ -73,62 +68,44 @@ const transformDatasets = (userInput, data) => {
     labels: rangeFiltered.map((r) => r.month),
     datasets: [
       {
-        label: '키 평균',
-        data: rangeFiltered.map((r) => r.height.lms[1]),
+        label: '10분위',
+        data: rangeFiltered.map((r) => r[type].percentiles[3]),
         // borderColor: 'rgb(255, 99, 132)',
         // backgroundColor: 'rgba(255, 99, 132, 0.5)',
         pointRadius: 0,
-        yAxisID: 'y',
       },
       {
-        label: '몸무게 평균',
-        data: rangeFiltered.map((r) => r.weight.lms[1]),
+        label: '25분위',
+        data: rangeFiltered.map((r) => r[type].percentiles[5]),
         // borderColor: 'rgb(255, 99, 132)',
         // backgroundColor: 'rgba(255, 99, 132, 0.5)',
         pointRadius: 0,
-        yAxisID: 'y1',
       },
-      // {
-      //   label: '1',
-      //   data: rangeFiltered.map((r) => r.standardScore[2]),
-      //   // borderColor: 'rgb(255, 99, 132)',
-      //   // backgroundColor: 'rgba(255, 99, 132, 0.5)',
-      //   pointRadius: 0,
-      // },
-      // {
-      //   label: '평균',
-      //   data: rangeFiltered.map((r) => r.standardScore[3]),
-      //   // borderColor: 'rgb(255, 99, 132)',
-      //   // backgroundColor: 'rgba(255, 99, 132, 0.5)',
-      //   pointRadius: 0,
-      // },
-      // {
-      //   label: '+1SD',
-      //   data: rangeFiltered.map((r) => r.standardScore[4]),
-      //   // borderColor: 'rgb(255, 99, 132)',
-      //   // backgroundColor: 'rgba(255, 99, 132, 0.5)',
-      //   pointRadius: 0,
-      // },
-      // {
-      //   label: '+2d',
-      //   data: rangeFiltered.map((r) => r.standardScore[5]),
-      //   // borderColor: 'rgb(255, 99, 132)',
-      //   // backgroundColor: 'rgba(255, 99, 132, 0.5)',
-      //   pointRadius: 0,
-      // },
       {
-        label: '내 아이 키',
-        data: userHeightData,
-        pointRadius: 5,
+        label: '평균',
+        data: rangeFiltered.map((r) => r[type].lms[1]),
         // borderColor: 'rgb(255, 99, 132)',
         // backgroundColor: 'rgba(255, 99, 132, 0.5)',
-        yAxisID: 'y',
+        pointRadius: 0,
       },
       {
-        label: '내 아이 몸무게',
-        data: userWeightData,
+        label: '75분위',
+        data: rangeFiltered.map((r) => r[type].percentiles[7]),
+        // borderColor: 'rgb(255, 99, 132)',
+        // backgroundColor: 'rgba(255, 99, 132, 0.5)',
+        pointRadius: 0,
+      },
+      {
+        label: '90분위',
+        data: rangeFiltered.map((r) => r[type].percentiles[9]),
+        // borderColor: 'rgb(255, 99, 132)',
+        // backgroundColor: 'rgba(255, 99, 132, 0.5)',
+        pointRadius: 0,
+      },
+      {
+        label: '내 아이',
+        data: userTypeData,
         pointRadius: 5,
-        yAxisID: 'y1',
         // borderColor: 'rgb(255, 99, 132)',
         // backgroundColor: 'rgba(255, 99, 132, 0.5)',
       },
@@ -136,18 +113,9 @@ const transformDatasets = (userInput, data) => {
   };
 };
 
-export default function GrowthChart({ userInput, data }) {
-  let chartData = null;
-  // const [chartData, setChartData] = useState(null);
-
-  if (data) {
-    if (!validateUserInput(userInput)) {
-      chartData = transformDatasets(generateDefaultUserInput(), data);
-    } else {
-      chartData = transformDatasets(userInput, data);
-    }
-    console.log('chart is ', chartData);
-  }
+// type: "height" | "weight"
+export default function GrowthChart({ userInput, type, data }) {
+  const chartData = transformDatasets(userInput, type, data);
 
   return chartData ? (
     <Line
@@ -158,37 +126,13 @@ export default function GrowthChart({ userInput, data }) {
           legend: {
             position: 'top',
           },
-          title: {
-            // display: true,
-            // text: '연령 별 신장',
-          },
         },
         scales: {
           x: {
             title: { display: true, text: '개월' },
-            // ticks: {
-            //   callback: (v, i, t) => {
-            //     console.log(v, i, t);
-            //     return `${v}개월`;
-            //   },
-            //   autoSkip: false,
-            // },
-            // display: true,
           },
           y: {
             title: { display: true, text: 'cm' },
-            position: 'left',
-            ticks: {
-              // callback: (v) => `${v}cm`,
-              // autoSkip: false,
-            },
-          },
-          y1: {
-            title: { display: true, text: 'kg' },
-            position: 'right',
-            grid: {
-              drawOnChartArea: false,
-            },
           },
         },
       }}

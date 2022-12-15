@@ -3,6 +3,7 @@ import Face3Icon from '@mui/icons-material/Face3';
 import {
   Box,
   Button,
+  ButtonGroup,
   Container,
   CssBaseline,
   Grid,
@@ -11,6 +12,7 @@ import {
   Typography,
 } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
+import ChartTabs from '../components/ChartTabs';
 import GrowthChart from '../components/GrowthChart';
 import api from '../utils/api';
 import { getUserPercentile } from '../utils/calculator';
@@ -129,21 +131,13 @@ export default function Home() {
           아이 성장 체크
         </Typography>
       </Box>
-      <Box
-        // fullWidth
-        sx={{
-          marginTop: 2,
-          width: 350,
-          height: 350,
-        }}
-      >
-        <GrowthChart userInput={userInput} data={data} />
-      </Box>
+
       <Box
         sx={{
           marginTop: 1,
           display: 'flex',
           flexDirection: 'column',
+          justifyContent: 'center',
           alignItems: 'center',
         }}
       >
@@ -153,10 +147,50 @@ export default function Home() {
         >
           <ScaleIcon />
         </Avatar> */}
-        <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 1 }}>
+        <Box
+          component="form"
+          noValidate
+          onSubmit={handleSubmit}
+          sx={{ mt: 1, ml: 4, mr: 4 }}
+        >
           <Grid container spacing={2}>
             {/* START - 개월 수 */}
-            <Grid item xs={6}>
+            {/* START - 성별 */}
+            <Grid item xs={12}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
+                <ButtonGroup fullWidth>
+                  <Button
+                    // fullWidth
+                    // variant="contained"
+                    onClick={handleMale}
+                    size="large"
+                    color={userInput.gender === 1 ? 'primary' : 'grey'}
+                    startIcon={<FaceIcon />}
+                  >
+                    남아
+                  </Button>
+                  <Button
+                    // fullWidth
+                    // variant="contained"
+                    onClick={handleFemale}
+                    size="large"
+                    color={userInput.gender === 2 ? 'primary' : 'grey'}
+                    startIcon={<Face3Icon />}
+                  >
+                    여아
+                  </Button>
+                </ButtonGroup>
+              </Box>
+            </Grid>
+            {/* END - 성별 */}
+            <Grid item xs={12}>
               <TextField
                 type="number"
                 fullWidth
@@ -178,31 +212,8 @@ export default function Home() {
             </Grid>
             {/* END - 개월 수 */}
 
-            {/* START - 성별 */}
-            <Grid item xs={6}>
-              <Box>
-                <Button
-                  onClick={handleMale}
-                  size="large"
-                  color={userInput.gender === 1 ? 'primary' : 'grey'}
-                  startIcon={<FaceIcon />}
-                >
-                  남아
-                </Button>
-                <Button
-                  onClick={handleFemale}
-                  size="large"
-                  color={userInput.gender === 2 ? 'primary' : 'grey'}
-                  startIcon={<Face3Icon />}
-                >
-                  여아
-                </Button>
-              </Box>
-            </Grid>
-            {/* END - 성별 */}
-
             {/* START - 키 */}
-            <Grid item xs={6}>
+            <Grid item xs={12}>
               <TextField
                 type="number"
                 // required
@@ -227,30 +238,8 @@ export default function Home() {
             </Grid>
             {/* END - 키 */}
 
-            {/* START- 키 백분위 슬라이더 */}
-            <Grid
-              item
-              xs={6}
-              sx={{
-                pl: 2,
-                pr: 2,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'flex-end',
-              }}
-            >
-              {/* <PercentileSlider value={value} /> */}
-              <Typography
-                component="h1"
-                variant="h4"
-                textAlign="center"
-              >{`${userHeightPercentile}%`}</Typography>
-            </Grid>
-            {/* END- 키 백분위 슬라이더 */}
-
             {/* START - 몸무게 */}
-            <Grid item xs={6}>
+            <Grid item xs={12}>
               <TextField
                 type="number"
                 // required
@@ -271,6 +260,25 @@ export default function Home() {
                 ref={weightInput}
                 onChange={handleWeight}
               />
+            </Grid>
+            <Grid
+              item
+              xs={6}
+              sx={{
+                pl: 2,
+                pr: 2,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'flex-end',
+              }}
+            >
+              {/* <PercentileSlider value={value} /> */}
+              <Typography
+                component="h1"
+                variant="h4"
+                textAlign="center"
+              >{`${userHeightPercentile}%`}</Typography>
             </Grid>
             <Grid
               item
@@ -308,6 +316,19 @@ export default function Home() {
               </Grid>
             </Grid> */}
         </Box>
+      </Box>
+      {/* <Box
+        // fullWidth
+        sx={{
+          marginTop: 2,
+          width: 350,
+          height: 350,
+        }}
+      >
+        <GrowthChart userInput={userInput} data={data} />
+      </Box> */}
+      <Box>
+        <ChartTabs userInput={userInput} data={data} />
       </Box>
       {/* <Copyright sx={{ mt: 5 }} /> */}
     </Container>
