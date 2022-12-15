@@ -122,11 +122,13 @@ const transformDatasets = (userInput, data) => {
         pointRadius: 5,
         // borderColor: 'rgb(255, 99, 132)',
         // backgroundColor: 'rgba(255, 99, 132, 0.5)',
+        yAxisID: 'y',
       },
       {
         label: '내 아이 몸무게',
         data: userWeightData,
         pointRadius: 5,
+        yAxisID: 'y1',
         // borderColor: 'rgb(255, 99, 132)',
         // backgroundColor: 'rgba(255, 99, 132, 0.5)',
       },
@@ -142,9 +144,9 @@ export default function GrowthChart({ userInput, data }) {
     if (!validateUserInput(userInput)) {
       chartData = transformDatasets(generateDefaultUserInput(), data);
     } else {
-      console.log('chart ', chartData);
       chartData = transformDatasets(userInput, data);
     }
+    console.log('chart is ', chartData);
   }
 
   return chartData ? (
