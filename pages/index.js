@@ -4,10 +4,12 @@ import {
   Box,
   Button,
   ButtonGroup,
+  CircularProgress,
   Container,
   CssBaseline,
   Grid,
   InputAdornment,
+  LinearProgress,
   Skeleton,
   TextField,
   Typography,
@@ -124,7 +126,7 @@ export default function Home() {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          mt: 2,
+          mt: 5,
         }}
       >
         <Typography component="h1" variant="h5">
@@ -134,7 +136,7 @@ export default function Home() {
 
       <Box
         sx={{
-          marginTop: 1,
+          marginTop: 2,
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
@@ -213,8 +215,13 @@ export default function Home() {
             {/* END - 개월 수 */}
 
             {/* START - 키 */}
-            <Grid item xs={12}>
+            <Grid item xs={6}>
               <TextField
+                // helperText={
+                //   userInput.height
+                //     ? `100명을 키 순으로 줄 세우면 ${userHeightPercentile.toFixed()}번째`
+                //     : '아이의 키를 입력해보세요.'
+                // }
                 type="number"
                 // required
                 fullWidth
@@ -239,8 +246,13 @@ export default function Home() {
             {/* END - 키 */}
 
             {/* START - 몸무게 */}
-            <Grid item xs={12}>
+            <Grid item xs={6}>
               <TextField
+                // helperText={
+                //   userInput.weight
+                //     ? `100명을 몸무게 순으로 줄 세우면 ${userWeightPercentile.toFixed()}번째`
+                //     : '아이의 몸무게를 입력해보세요.'
+                // }
                 type="number"
                 // required
                 fullWidth
@@ -261,72 +273,53 @@ export default function Home() {
                 onChange={handleWeight}
               />
             </Grid>
-            <Grid
-              item
-              xs={6}
-              sx={{
-                pl: 2,
-                pr: 2,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'flex-end',
-              }}
-            >
-              {/* <PercentileSlider value={value} /> */}
-              <Typography
-                component="h1"
-                variant="h4"
-                textAlign="center"
-              >{`${userHeightPercentile}%`}</Typography>
+
+            {/* 유저 백분위 값 */}
+            <Grid item xs={6}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontSize: '0.5rem',
+                  }}
+                >
+                  100명 중 <strong>키</strong>
+                </Typography>
+                <Typography component="h1" variant="h5" textAlign="center">
+                  {`${userHeightPercentile}%`}
+                </Typography>
+              </Box>
             </Grid>
-            <Grid
-              item
-              xs={6}
-              sx={{
-                pl: 2,
-                pr: 2,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'flex-end',
-              }}
-            >
-              <Typography
-                component="h1"
-                variant="h4"
-                textAlign="center"
-              >{`${userWeightPercentile}%`}</Typography>
+
+            <Grid item xs={6}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontSize: '0.5rem',
+                  }}
+                >
+                  100명 중 <strong>몸무게</strong>
+                </Typography>
+                <Typography component="h1" variant="h5" textAlign="center">
+                  {`${userWeightPercentile}%`}
+                </Typography>
+              </Box>
             </Grid>
-            {/* END - 몸무게 */}
           </Grid>
-          {/* <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            sx={{ mt: 3, mb: 2 }}
-          >
-            확인
-          </Button> */}
-          {/* <Grid container justifyContent="flex-end">
-              <Grid item>
-                <Link href="#" variant="body2">
-                  Already have an account? Sign in
-                </Link>
-              </Grid>
-            </Grid> */}
         </Box>
       </Box>
-      {/* <Box
-        // fullWidth
-        sx={{
-          marginTop: 2,
-          width: 350,
-          height: 350,
-        }}
-      >
-        <GrowthChart userInput={userInput} data={data} />
-      </Box> */}
+
       <Box
         sx={{
           display: 'flex',
@@ -338,28 +331,20 @@ export default function Home() {
         {data ? (
           <ChartTabs userInput={userInput} data={data} />
         ) : (
-          <Skeleton fullWidth sx={{ width: 500, height: 500 }} />
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: 400,
+              height: 400,
+            }}
+          >
+            <CircularProgress sx={{ width: '100%', height: 50 }} />
+          </Box>
         )}
       </Box>
-      {/* <Copyright sx={{ mt: 5 }} /> */}
     </Container>
   );
 }
-
-// function Copyright(props) {
-//   return (
-//     <Typography
-//       variant="body2"
-//       color="text.secondary"
-//       align="center"
-//       {...props}
-//     >
-//       {'Copyright © '}
-//       <Link color="inherit" href="https://mui.com/">
-//         Your Website
-//       </Link>{' '}
-//       {new Date().getFullYear()}
-//       {'.'}
-//     </Typography>
-//   );
-// }

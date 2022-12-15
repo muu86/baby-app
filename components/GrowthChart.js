@@ -110,6 +110,9 @@ export default function GrowthChart({ userInput, type, data }) {
   return chartData ? (
     <Line
       options={{
+        animation: {
+          duration: 0,
+        },
         responsive: true,
         aspectRatio: 1,
         plugins: {
