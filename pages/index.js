@@ -27,6 +27,7 @@ const validateUserInput = ({ gender, month, height, weight }) => {
 
 export default function Home() {
   const [data, setData] = useState(null);
+  const [chartType, setChartType] = useState('height');
   const [userHeightPercentile, setUserHeightPercentile] = useState(0.0);
   const [userWeightPercentile, setUserWeightPercentile] = useState(0.0);
   const [userInput, setUserInput] = useState({});
@@ -52,6 +53,10 @@ export default function Home() {
     if (userPercentile.height) setUserHeightPercentile(userPercentile.height);
     if (userPercentile.weight) setUserWeightPercentile(userPercentile.weight);
   }, [userInput, data]);
+
+  const handleChartType = (type) => {
+    setChartType(type);
+  };
 
   const handleMale = () => {
     setUserInput({
@@ -290,7 +295,11 @@ export default function Home() {
                 >
                   100명 중 <strong>키</strong>
                 </Typography>
-                <Typography component="h1" variant="h5" textAlign="center">
+                <Typography
+                  component="h1"
+                  variant="h5"
+                  color={chartType == 'height' ? 'primary.main' : null}
+                >
                   {`${userHeightPercentile}%`}
                 </Typography>
               </Box>
@@ -311,7 +320,11 @@ export default function Home() {
                 >
                   100명 중 <strong>몸무게</strong>
                 </Typography>
-                <Typography component="h1" variant="h5" textAlign="center">
+                <Typography
+                  component="h1"
+                  variant="h5"
+                  color={chartType == 'weight' ? 'primary.main' : null}
+                >
                   {`${userWeightPercentile}%`}
                 </Typography>
               </Box>
@@ -329,7 +342,11 @@ export default function Home() {
         }}
       >
         {data ? (
-          <ChartTabs userInput={userInput} data={data} />
+          <ChartTabs
+            typeHandler={handleChartType}
+            userInput={userInput}
+            data={data}
+          />
         ) : (
           <Box
             sx={{

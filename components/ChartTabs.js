@@ -25,11 +25,18 @@ function a11yProps(index) {
   };
 }
 
-export default function ChartTabs({ userInput, data }) {
+export default function ChartTabs({ typeHandler, userInput, data }) {
   const [value, setValue] = useState(0);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
+
+    console.log(newValue);
+    if (newValue == 0) {
+      typeHandler('height');
+    } else {
+      typeHandler('weight');
+    }
   };
 
   return (
